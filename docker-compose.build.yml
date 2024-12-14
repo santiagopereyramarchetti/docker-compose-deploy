@@ -4,7 +4,12 @@ services:
     build:
       context: .
       dockerfile: ./docker/proxy/Dockerfile.proxy
-      target: dev
+      target: prod
+      x-bake:
+        platforms:
+          - linux/amd64
+          - linux/arm64
+    image: santiagopereyramarchetti/proxy-doc-compo:1.0
     container_name: proxy
     restart: unless-stopped
     ports:
@@ -20,7 +25,12 @@ services:
     build:
       context: .
       dockerfile: ./docker/vue/Dockerfile.vue
-      target: dev
+      target: prod
+      x-bake:
+        platforms:
+          - linux/amd64
+          - linux/arm64
+    image: santiagopereyramarchetti/frontend-doc-compo:1.0
     container_name: frontend
     restart: unless-stopped
     volumes:
@@ -33,6 +43,11 @@ services:
     build:
       context: .
       dockerfile: ./docker/nginx/Dockerfile.nginx
+      x-bake:
+        platforms:
+          - linux/amd64
+          - linux/arm64
+    image: santiagopereyramarchetti/nginx-doc-compo:1.0
     container_name: nginx
     restart: unless-stopped
     volumes:
@@ -52,6 +67,11 @@ services:
     build:
       context: .
       dockerfile: ./docker/laravel/Dockerfile.laravel
+      x-bake:
+        platforms:
+          - linux/amd64
+          - linux/arm64
+    image: santiagopereyramarchetti/api-doc-compo:1.0
     container_name: api
     restart: unless-stopped
     volumes:
@@ -72,6 +92,11 @@ services:
     build:
       context: .
       dockerfile: ./docker/mysql/Dockerfile.mysql
+      x-bake:
+        platforms:
+          - linux/amd64
+          - linux/arm64
+    image: santiagopereyramarchetti/mysql-doc-compo:1.0
     container_name: mysql
     restart: unless-stopped
     volumes:
@@ -90,6 +115,11 @@ services:
     build:
       context: .
       dockerfile: ./docker/inicialization/Dockerfile
+      x-bake:
+        platforms:
+          - linux/amd64
+          - linux/arm64
+    image: santiagopereyramarchetti/init-doc-compo:1.0
     container_name: inicialization
     restart: no
     volumes:
@@ -102,7 +132,7 @@ services:
       WAIT_INTERVAL: 10
       MYSQL_CONTAINER_NAME: mysql
       API_CONTAINER_NAME: api
-      mode: dev
+      mode: prod
     depends_on:
       - mysql
       - redis

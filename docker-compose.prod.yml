@@ -4,6 +4,8 @@ services:
     build:
       context: .
       dockerfile: ./docker/proxy/Dockerfile.proxy
+      target: prod
+    container_name: proxy
     restart: unless-stopped
     ports:
       - "80:80"
@@ -16,13 +18,15 @@ services:
     build:
       context: .
       dockerfile: ./docker/vue/Dockerfile.vue
-      target: dev
+      target: prod
+    container_name: frontend
     restart: unless-stopped
 
   nginx:
     build:
       context: .
       dockerfile: ./docker/nginx/Dockerfile.nginx
+    container_name: nginx
     restart: unless-stopped
     depends_on:
       - api
@@ -31,7 +35,10 @@ services:
     build:
       context: .
       dockerfile: ./docker/laravel/Dockerfile.laravel
+    container_name: api
     restart: unless-stopped
+    env_file:
+      - ./backend/.env
     depends_on:
       - mysql
       - redis
@@ -40,6 +47,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/mysql/Dockerfile.mysql
+    container_name: mysql
     restart: unless-stopped
     volumes:
       - ./mysqldata:/var/lib/mysql
@@ -48,25 +56,27 @@ services:
 
   redis:
     image: redis:7-alpine
+    container_name: redis
     restart: unless-stopped
     volumes:
       - ./redisdata:/data
 
   inicialization:
-    image: docker:27.3.1-cli-alpine3.20
+    build:
+      context: .
+      dockerfile: ./docker/inicialization/Dockerfile
+    container_name: inicialization
     restart: no
     volumes:
-      - ./docker/inicialization/init.sh:/usr/src/init.sh
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       DB_USER: backend
       DB_PASSWORD: password
       MAX_WAIT: 120
       WAIT_INTERVAL: 10
-      MYSQL_CONTAINER_NAME: vagrant-mysql-1
-      API_CONTAINER_NAME: vagrant-api-1
+      MYSQL_CONTAINER_NAME: mysql
+      API_CONTAINER_NAME: api
       mode: prod
-    entrypoint: ["sh","-c","chmod +x /usr/src/init.sh && /usr/src/init.sh"]
     depends_on:
       - mysql
       - redis
