@@ -1,0 +1,71 @@
+version: "3.8"
+services:
+  proxy:
+    image: santiagopereyramarchetti/proxy-doc-compo:1.0
+    container_name: proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - frontend
+      - nginx
+  
+  frontend:
+    image: santiagopereyramarchetti/frontend-doc-compo:1.0
+    container_name: frontend
+    restart: unless-stopped
+
+  nginx:
+    image: santiagopereyramarchetti/nginx-doc-compo:1.0
+    container_name: nginx
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - api
+
+  api:
+    image: santiagopereyramarchetti/api-doc-compo:1.0
+    container_name: api
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - mysql
+      - redis
+
+  mysql:
+    image: santiagopereyramarchetti/mysql-doc-compo:1.0
+    container_name: mysql
+    restart: unless-stopped
+    volumes:
+      - ./mysqldata:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    volumes:
+      - ./redisdata:/data
+
+  inicialization:
+    image: santiagopereyramarchetti/init-doc-compo:1.0
+    container_name: inicialization
+    restart: no
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      DB_USER: backend
+      DB_PASSWORD: password
+      MAX_WAIT: 120
+      WAIT_INTERVAL: 10
+      MYSQL_CONTAINER_NAME: mysql
+      API_CONTAINER_NAME: api
+      mode: prod
+    depends_on:
+      - mysql
+      - redis
+      - api
